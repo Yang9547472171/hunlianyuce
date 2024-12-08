@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>测评结果 - AI Love Match</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .result {
+            padding: var(--spacing-xxl) 0;
+            background-color: var(--color-bg-secondary);
+            min-height: 100vh;
+            overflow-y: auto;
+        }
+        
+        .result-card {
+            max-width: 800px;
+            margin: 0 auto;
+            margin-bottom: var(--spacing-xl);
+            padding: var(--spacing-xl);
+            background-color: var(--color-bg-primary);
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+        }
+        
+        .result-header {
+            text-align: center;
+            margin-bottom: var(--spacing-xl);
+        }
+        
+        .result-header h2 {
+            font-size: 28px;
+            color: var(--color-text-primary);
+            margin-bottom: var(--spacing-sm);
+        }
+        
+        .total-score {
+            font-size: 48px;
+            font-weight: bold;
+            color: var(--color-primary);
+            text-shadow: 0 2px 4px rgba(255, 107, 107, 0.2);
+        }
+        
+        .score-section {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--spacing-lg);
+            margin-bottom: var(--spacing-xl);
+        }
+        
+        .score-card {
+            text-align: center;
+            padding: var(--spacing-md);
+            background-color: var(--color-bg-secondary);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-sm);
+        }
+        
+        .score-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+        
+        .score-card h3 {
+            font-size: 16px;
+            color: var(--color-text-secondary);
+        }
+        
+        .score-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: var(--color-primary);
+            text-shadow: 0 2px 4px rgba(255, 107, 107, 0.2);
+        }
+        
+        .score-card p {
+            margin: 0;
+            color: var(--color-text-secondary);
+        }
+        
+        .analysis-section {
+            margin-bottom: var(--spacing-xl);
+            line-height: 1.8;
+        }
+        
+        .analysis-section h3 {
+            font-size: 20px;
+            margin-bottom: var(--spacing-md);
+            color: var(--color-text-primary);
+        }
+        
+        .analysis-section p {
+            margin-bottom: var(--spacing-md);
+            color: var(--color-text-secondary);
+        }
+        
+        .suggestion-section {
+            background-color: var(--color-bg-secondary);
+            padding: var(--spacing-xl);
+            border-radius: 8px;
+            margin-bottom: var(--spacing-xl);
+            line-height: 1.8;
+        }
+        
+        .suggestion-section h3 {
+            font-size: 20px;
+            margin-bottom: var(--spacing-md);
+            color: var(--color-text-primary);
+        }
+        
+        .suggestion-section ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .suggestion-section li {
+            position: relative;
+            padding-left: 24px;
+            margin-bottom: var(--spacing-sm);
+            color: var(--color-text-secondary);
+        }
+        
+        .suggestion-section li::before {
+            content: "•";
+            position: absolute;
+            left: 8px;
+            color: var(--color-primary);
+        }
+        
+        .action-section {
+            text-align: center;
+            margin-top: var(--spacing-xxl);
+        }
+        
+        .action-section .btn {
+            margin: 0 var(--spacing-sm);
+        }
+        
+        @media (max-width: 1024px) {
+            /* 删除不需要的媒体查询 */
+        }
+        
+        @media (max-width: 768px) {
+            .result-card {
+                margin: 0 var(--spacing-md);
+            }
+            
+            .score-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .score-value {
+                font-size: 28px;
+            }
+            
+            .result-header {
+                flex-direction: column;
+                text-align: center;
+                gap: var(--spacing-md);
+            }
+            
+            .total-score {
+                font-size: 36px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main class="result">
+        <div class="container">
+            <div class="result-card">
+                <div class="result-header">
+                    <h2>你的理想伴侣画像</h2>
+                </div>
+
+                <div class="analysis-section">
+                    <div id="analysis"></div>
+                </div>
+
+                <div class="suggestion-section">
+                    <h3>寻爱建议</h3>
+                    <div id="suggestions"></div>
+                </div>
+
+                <div class="action-section">
+                    <button class="btn btn--primary" onclick="window.location.href='/'">返回首页</button>
+                    <button class="btn btn--secondary" onclick="window.location.href='/assessment/'">重新测评</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 获取URL参数
+            const params = new URLSearchParams(window.location.search);
+            const personalityScore = parseInt(params.get('p')) || 0;
+            const valuesScore = parseInt(params.get('v')) || 0;
+            const lifestyleScore = parseInt(params.get('l')) || 0;
+
+            // 生成分析结果
+            const analysis = document.getElementById('analysis');
+            const suggestions = document.getElementById('suggestions');
+
+            // 生成理想伴侣画像
+            const portrait = generatePortrait(personalityScore, valuesScore, lifestyleScore);
+
+            // 详细分析
+            analysis.innerHTML = `
+                <div class="aspect-analysis">
+                    <p><strong>性格特质：</strong>${portrait.personality}</p>
+                    <p><strong>三观特点：</strong>${portrait.values}</p>
+                    <p><strong>生活方式：</strong>${portrait.lifestyle}</p>
+                    <p><strong>职业倾向：</strong>${portrait.career.jobs}</p>
+                    <p><strong>邂逅建议：</strong>${portrait.career.places}</p>
+                </div>
+            `;
+
+            // 建议
+            suggestions.innerHTML = `
+                <ul class="suggestion-list">
+                    ${portrait.suggestions.map(s => `<li>${s}</li>`).join('')}
+                </ul>
+            `;
+        });
+
+        function generatePortrait(p, v, l) {
+            // 基于用户的选择生成理想伴侣画像
+            return {
+                personality: '温柔体贴、善解人意，能在你需要时给予支持和理解。具有独立思考能力，同时也尊重你的想法。',
+                values: '对感情专一认真，有共同奋斗的意愿，对未来有清晰的规划和目标。',
+                lifestyle: '生活节奏相近，既能享受安静的二人世界，也愿意尝试新鲜事物。',
+                career: {
+                    jobs: '这类人往往从事教师、医生、设计师、创意工作者、企业管理等需要专业技能且重视沟通的工作。',
+                    places: '你可以通过参加专业交流会、行业研讨会、兴趣社团、公益活动等场合接触到这类人。瑜伽馆、咖啡厅、图书馆、艺术展等文艺场所也是不错的选择。'
+                },
+                suggestions: [
+                    '多参加共同兴趣的社交活动',
+                    '保持开放的心态，给彼此了解的机会',
+                    '注意观察对方的情感表达方式',
+                    '在交往中保持真诚的态度'
+                ]
+            };
+        }
+    </script>
+</body>
+</html>
